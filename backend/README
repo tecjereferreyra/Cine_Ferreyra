@@ -1,0 +1,14 @@
+1. ¿Por qué el laboratorio paralelo tarda ~1 segundo y no ~3, si las tres consultas duermen 1 segundo 
+cada una? 
+El laboratorio paralelo tarda 1 segundo por que se utiliza promise.all, que a lo que yo entiendo, es una palabra reservada de node.js que me permite trabajar con promesas (son objetos, que pueden tener 2 valores un rej, o res, dependiendo si se resuelve o no la petición iniciada por un evento del usuario en el front,si la promesa se resuelve, el resultado de la ejecucion del store procedure que llamó la API a ejecutarse, se almacena en el res, y accedemos con await para convertir ese resultado en el formato JSON y poder darle un estilo en el front para que el usuario pueda verlo esteticamente bien). Si no se pudo resolver, se almacena generalmente en el rej, un error que se lo maneja con catch para que sea agradable y entendible por el usuario.
+El promise.all a mi parece permite ejecutar un único fetch, con 3 peticiones dentro que son manejadas con 3 promesas.
+En cambio en el secuencial, es un fetch por cada promesa, por ende demora más tiempo.
+
+
+2. ¿Por qué la compra de la farmacia (venta → detalle → stock) NO podría usar Promise.all? 
+A mi parecer, primero la venta debe registrarse  para saber el  ID , ya que el detalle necesita ese ID para asociarse a la transacción, y el stock solo puede descontarse una vez que se conoce la cantidad exacta vendida en el detalle.
+
+
+3. ¿Qué pasaría si llamaras a comprar() sin await y sin catch, y la base rechazara la compra? 
+
+Es obligatorio utilizar siempre llamadas asíncronas para realizar peticiones a los servidores, ya que cómo los datos no se encuentran en la memoria de el programa(ej un vector como aprendimos el año pasado, o una lista también), esos datos tienen que viajar por la red, por ende depende de la estabilidad de conectividad y servidor, el ancho de banda disponible de la red, y muchos otros factores más. Usando funciones asincronas, nos aseguramos de que primero, el usuario no tenga una UX mala, ya que evitamos que la interfaz se congele, por que el hilo principal puede seguir atendiendo el bucle de eventos y el redibujado de la interfaz, sin demorar tanto con una tarea de entrada y salida como es la de obtener datos de un servidor. y por otro lado, sabemos que ese objeto llamado promesa, se encarga de almacenar el resultado de esa petición tanto sean, los datos, o un código de respuesta.
